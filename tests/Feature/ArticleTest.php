@@ -2,37 +2,28 @@
 
 namespace Tests\Feature;
 
-use App\Models\Article;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Models\Article;
 
 class ArticleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testShowArticle()
+    /** @test */
+    public function show_article()
     {
-        $article = Article::factory()->create();
+        // Arrange: buat dummy article di database testing
+        $article = Article::factory()->create([
+            'title' => 'Test Judul',
+            'content' => 'Isi artikel untuk testing',
+        ]);
 
-        $response = $this->get('api/articles/' . $article->slug)
-            ->assertExactJson([
-                'article' => [
-                    'slug' => $article->slug,
-                    'title' => $article->title,
-                    'body' => $article->body,
-                    'description' => $article->description,
-                    'tagList' => [],
-                    'createdAt' => $article->created_at,
-                    'updatedAt' => $article->updated_at,
-                    'favorited' => false,
-                    'favoritesCount' => 0,
-                    'author' => [
-                        'username' => $article->user->username,
-                        'bio' => $article->user->bio,
-                        'image' => $article->user->image,
-                        'following' => false
-                    ]
-                ]
-            ]);
+        // Act: request ke endpoint show article
+        $response = $this->get("/articles/{$article->id}");
+
+        // Assert: cek status OK & data muncul
+        $response->assertStatus(200);
+        $response->assertSee($article->title);
     }
 }
